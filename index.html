@@ -921,6 +921,9 @@ window.addEventListener('DOMContentLoaded', () => {
     setStatus('err','Planilha não configurada — clique em ⚙ para configurar.');
   }
 });
+  setInterval(() => {
+  loadData();
+}, 30000);
 </script>
 </body>
 </html>
