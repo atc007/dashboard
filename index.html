@@ -7,6 +7,81 @@
   <link rel="icon" type="image/png" href="favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
+  /* ==========================================================
+   MOBILE RESPONSIVE
+========================================================== */
+
+@media (max-width: 1024px) {
+
+  .g4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .g3 {
+    grid-template-columns: 1fr;
+  }
+
+  .g2 {
+    grid-template-columns: 1fr;
+  }
+
+  .mkt-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .canal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .resultado-final {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 22px;
+  }
+
+  .rf-sep {
+    display: none;
+  }
+
+  .rsum {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .rsep {
+    display: none;
+  }
+
+  .mkt-resumo {
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .mkt-resumo-item {
+    border-right: none;
+    padding: 0;
+  }
+
+  .filterbar {
+    gap: 10px;
+  }
+
+  .fv {
+    min-width: 100px;
+  }
+
+  .topbar {
+    padding: 0 14px;
+    height: auto;
+    min-height: 58px;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+}
   :root {
     --bg:#0d1117; --surface:#161b27; --card:#1c2333; --card-h:#1f2840;
     --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.04);
