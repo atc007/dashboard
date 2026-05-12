@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seja Minimalista — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d1117; --surface:#161b27; --card:#1c2333; --card-h:#1f2840;
+    --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.04);
+    --text:#e6edf3; --muted:#7d8590; --muted2:#4d5562;
+    --blue:#4493f8; --blue-dim:rgba(68,147,248,0.12);
+    --green:#3fb950; --green-dim:rgba(63,185,80,0.12);
+    --red:#f85149; --red-dim:rgba(248,81,73,0.12);
+    --yellow:#d29922; --yellow-dim:rgba(210,153,34,0.12);
+    --orange:#f0883e; --orange-dim:rgba(240,136,62,0.12);
+    --purple:#a371f7; --purple-dim:rgba(163,113,247,0.12);
+    --ig:#e1306c; --fb:#4493f8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sans-serif;font-size:13px;min-height:100vh;}
+
+  /* TOPBAR */
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:54px;position:sticky;top:0;z-index:100;}
+  .logo{font-size:15px;font-weight:600;letter-spacing:-.3px;}
+  .logo span{color:var(--blue);}
+  .page-badge{font-size:11px;color:var(--muted);background:var(--card);border:1px solid var(--border);padding:3px 10px;border-radius:20px;margin-left:12px;}
+  .topbar-right{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--muted);}
+  .live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+  .btn{border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity .15s;}
+  .btn:hover{opacity:.85;}
+  .btn-primary{background:var(--blue);color:#fff;}
+  .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+
+  /* SETUP MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:32px;width:540px;max-width:95vw;}
+  .modal-title{font-size:18px;font-weight:600;margin-bottom:6px;}
+  .modal-sub{font-size:12px;color:var(--muted);margin-bottom:24px;line-height:1.6;}
+  .step{display:flex;gap:14px;margin-bottom:18px;align-items:flex-start;}
+  .step-num{width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .step-text{font-size:12px;color:var(--muted);line-height:1.6;}
+  .step-text strong{color:var(--text);}
+  .url-input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;font-family:inherit;outline:none;margin-top:6px;transition:border-color .15s;}
+  .url-input:focus{border-color:var(--blue);}
+  .url-input::placeholder{color:var(--muted2);}
+  .modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end;}
+
+  /* STATUS BAR */
+  .statusbar{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 24px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--muted);}
+  .statusbar-left{display:flex;align-items:center;gap:8px;}
+  .status-dot-ok{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;}
+  .status-dot-err{width:6px;height:6px;border-radius:50%;background:var(--red);flex-shrink:0;}
+  .status-dot-load{width:6px;height:6px;border-radius:50%;background:var(--yellow);animation:pulse 1s infinite;flex-shrink:0;}
+
+  /* FILTER BAR */
+  .filterbar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end;}
+  .fg{display:flex;flex-direction:column;gap:3px;}
+  .fl{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+  .fv{font-size:12px;color:var(--text);background:var(--card);border:1px solid var(--border);border-radius:6px;padding:5px 12px;min-width:120px;}
+
+  /* CONTENT */
+  .content{padding:20px 24px 48px;max-width:1400px;margin:0 auto;}
+  .sec{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:28px 0 10px;display:flex;align-items:center;gap:8px;}
+  .sec::after{content:'';flex:1;height:1px;background:var(--border);}
+  .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+  /* CARDS */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;transition:background .15s;}
+  .card:hover{background:var(--card-h);}
+  .card.al{border-left:3px solid var(--blue);}
+  .card.ag{border-left:3px solid var(--green);}
+  .card.ar{border-left:3px solid var(--red);}
+  .card.ay{border-left:3px solid var(--yellow);}
+  .mlabel{font-size:11px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+  .minfo{width:14px;height:14px;border-radius:50%;border:1px solid var(--muted2);display:inline-flex;align-items:center;justify-content:center;font-size:8px;color:var(--muted2);cursor:help;flex-shrink:0;}
+  .mval{font-size:26px;font-weight:600;letter-spacing:-.5px;line-height:1;}
+  .mval.bl{color:var(--blue);}.mval.gr{color:var(--green);}.mval.rd{color:var(--red);}.mval.yl{color:var(--yellow);}
+  .msub{font-size:10px;color:var(--muted);margin-top:5px;}
+
+  /* CANAL */
+  .canal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .canal-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:22px 24px;transition:background .15s;}
+  .canal-card:hover{background:var(--card-h);}
+  .canal-card.pago{border-top:3px solid var(--blue);}
+  .canal-card.organico{border-top:3px solid var(--green);}
+  .canal-label{font-size:10px;font-weight:500;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .canal-body{display:flex;align-items:flex-end;gap:20px;}
+  .canal-pct{font-size:42px;font-weight:700;letter-spacing:-1.5px;line-height:1;}
+  .canal-pct.pago{color:var(--blue);}.canal-pct.organico{color:var(--green);}
+  .canal-value{font-size:22px;font-weight:600;}.canal-count{font-size:11px;color:var(--muted);margin-top:3px;}
+  .canal-bar-wrap{height:4px;background:rgba(255,255,255,.06);border-radius:2px;margin-top:14px;overflow:hidden;}
+  .canal-bar{height:100%;border-radius:2px;}
+  .canal-bar.pago{background:var(--blue);}.canal-bar.organico{background:var(--green);}
+  .canal-sub{font-size:10px;color:var(--muted);margin-top:8px;}
+
+  /* DAILY CHART */
+  .daily-chart{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px 22px;}
+  .daily-bars{display:flex;align-items:flex-end;gap:8px;height:90px;margin-top:14px;overflow-x:auto;}
+  .daily-col{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:40px;}
+  .daily-bar-wrap{width:100%;display:flex;align-items:flex-end;height:56px;}
+  .daily-bar{width:100%;border-radius:3px 3px 0 0;min-height:2px;}
+  .daily-val{font-size:9px;font-weight:600;color:var(--text);}
+  .daily-lbl{font-size:8px;color:var(--muted);text-align:center;}
+
+  /* PRODUTOS */
+  .prow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border2);}
+  .prow:last-child{border-bottom:none;}
+  .pname{font-size:12px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pbwrap{width:80px;height:3px;background:var(--border);border-radius:2px;flex-shrink:0;}
+  .pbar{height:100%;border-radius:2px;}
+  .pstats{display:flex;gap:14px;flex-shrink:0;text-align:right;}
+  .psv{font-size:13px;font-weight:600;}.psl{font-size:9px;color:var(--muted);}
+
+  /* APROVAÇÃO */
+  .arow{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border2);}
+  .arow:last-child{border-bottom:none;}
+  .amet{font-size:12px;font-weight:500;}
+
+  /* FONTES */
+  .fbwrap{height:3px;background:var(--border);border-radius:2px;margin-top:8px;}
+  .fbar{height:100%;border-radius:2px;}
+  .fbar.ig{background:var(--ig);}.fbar.fb{background:var(--fb);}.fbar.org{background:var(--green);}
+  .plrow{display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px;}
+  .plrow:last-child{margin-bottom:0;}
+  .plrow .pl-lbl{color:var(--muted);}
+
+  /* CAMPANHAS */
+  .ctable{width:100%;border-collapse:collapse;}
+  .ctable th{font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);background:var(--surface);}
+  .ctable td{padding:11px 14px;font-size:12px;border-bottom:1px solid var(--border2);}
+  .ctable tr:last-child td{border-bottom:none;}
+  .ctable tr:hover td{background:rgba(255,255,255,.02);}
+  .pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:500;padding:3px 9px;border-radius:20px;}
+  .pill.ig{background:rgba(225,48,108,.12);color:var(--ig);}
+  .pill.fb{background:var(--blue-dim);color:var(--blue);}
+  .pill.org{background:var(--green-dim);color:var(--green);}
+
+  /* MARKETPLACE */
+  .mkt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .mkt-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .mkt-header{padding:16px 18px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border2);}
+  .mkt-logo{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .mkt-name{font-size:13px;font-weight:600;}
+  .mkt-tagline{font-size:10px;color:var(--muted);margin-top:1px;}
+  .mkt-body{padding:14px 18px;}
+  .mkt-stat{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border2);}
+  .mkt-stat:last-child{border-bottom:none;}
+  .mkt-stat-lbl{font-size:10px;color:var(--muted);}
+  .mkt-stat-val{font-size:13px;font-weight:600;}
+  .mkt-resumo{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 22px;margin-top:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;align-items:center;}
+  .mkt-resumo-item{padding:0 20px;border-right:1px solid var(--border);}
+  .mkt-resumo-item:first-child{padding-left:0;}.mkt-resumo-item:last-child{border-right:none;}
+  .mkt-rl{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px;}
+  .mkt-rv{font-size:18px;font-weight:600;}
+
+  /* COMPOSIÇÃO */
+  .rsum{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px 22px;display:flex;gap:0;flex-wrap:wrap;align-items:center;}
+  .ri{display:flex;flex-direction:column;gap:3px;padding:0 14px;}
+  .ri:first-child{padding-left:0;}
+  .ril{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+  .riv{font-size:14px;font-weight:600;}
+  .rsep{width:1px;background:var(--border);margin:0 4px;align-self:stretch;min-height:36px;}
+
+  /* RESULTADO FINAL */
+  .resultado-final{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:26px 30px;margin-top:10px;display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 140px;align-items:center;}
+  .rf-sep{width:1px;background:var(--border);align-self:stretch;min-height:60px;margin:0 8px;}
+  .rf-block{display:flex;flex-direction:column;gap:4px;padding:0 14px;}
+  .rf-block:first-child{padding-left:0;}
+  .rf-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+  .rf-value{font-size:28px;font-weight:700;letter-spacing:-1px;line-height:1.1;margin-top:4px;}
+  .rf-sub{font-size:10px;color:var(--muted);margin-top:4px;}
+  .rf-pct-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;padding:0 14px;}
+  .rf-pct-ring{position:relative;width:88px;height:88px;}
+  .rf-pct-ring svg{transform:rotate(-90deg);}
+  .rf-pct-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .rf-pct-num{font-size:15px;font-weight:700;line-height:1;}
+  .rf-pct-lbl{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+
+  /* LOADING SKELETON */
+  .skeleton{background:linear-gradient(90deg,var(--card) 25%,var(--card-h) 50%,var(--card) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:4px;height:26px;}
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+  footer{border-top:1px solid var(--border);padding:14px 24px;font-size:10px;color:var(--muted);display:flex;justify-content:space-between;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+</style>
+</head>
+<body>
+
+<!-- MODAL DE CONFIGURAÇÃO -->
+<div class="modal-overlay" id="setupModal">
+  <div class="modal">
+    <div class="modal-title">⚙️ Configurar Google Sheets</div>
+    <div class="modal-sub">Conecte o dashboard à sua planilha para atualizações em tempo real.</div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">No Google Sheets, abra o menu <strong>🛒 Seja Minimalista → Setup inicial</strong> (aparece após instalar o Apps Script).</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">Na aba <strong>Resumo</strong>, clique em <strong>Arquivo → Compartilhar → Publicar na web</strong>. Selecione a aba <strong>Resumo</strong> e formato <strong>CSV</strong>. Copie a URL gerada.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">Cole a URL abaixo. O dashboard vai buscar os dados automaticamente ao abrir e ao clicar <strong>Atualizar</strong>.</div>
+    </div>
+
+    <div style="margin-top:4px">
+      <div class="fl" style="margin-bottom:6px">URL do CSV da aba Resumo</div>
+      <input class="url-input" id="sheetUrlInput" type="url"
+             placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?gid=0&single=true&output=csv">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveAndLoad()">Salvar e carregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div style="display:flex;align-items:center">
+    <div class="logo">Seja <span>Minimalista</span></div>
+    <div class="page-badge" id="periodoBadge">Dashboard</div>
+  </div>
+  <div class="topbar-right">
+    <div class="live-dot"></div>
+    <span id="lastUpdate">Carregando...</span>
+    <button class="btn btn-ghost" onclick="openModal()" title="Configurações">⚙</button>
+    <button class="btn btn-primary" onclick="loadData()">Atualizar</button>
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="statusbar">
+  <div class="statusbar-left">
+    <div class="status-dot-load" id="statusDot"></div>
+    <span id="statusMsg">Buscando dados da planilha...</span>
+  </div>
+  <div id="statusRight" style="font-size:10px;color:var(--muted)">Webhook Eduzz → Apps Script → Sheets → Dashboard</div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filterbar">
+  <div class="fg"><div class="fl">Período</div><div class="fv" id="fPeriodo">—</div></div>
+  <div class="fg"><div class="fl">Tráfego pago</div><div class="fv" id="fTrafego">—</div></div>
+  <div class="fg"><div class="fl">Imposto Meta (12,15%)</div><div class="fv" id="fImposto">—</div></div>
+  <div class="fg"><div class="fl">Marketplaces</div><div class="fv" id="fMkt">—</div></div>
+</div>
+
+<div class="content">
+
+  <!-- CANAL SPLIT -->
+  <div class="sec">Panorama Geral por Canal</div>
+  <div class="canal-grid">
+    <div class="canal-card pago">
+      <div class="canal-label">📣 Tráfego Pago</div>
+      <div class="canal-body">
+        <div class="canal-pct pago" id="pagoPct">—</div>
+        <div>
+          <div class="canal-value" id="pagoVal">—</div>
+          <div class="canal-count" id="pagoVnd">—</div>
+        </div>
+      </div>
+      <div class="canal-bar-wrap"><div class="canal-bar pago" id="pagoBar" style="width:0%"></div></div>
+      <div class="canal-sub" id="pagoSub">Instagram · Facebook · Meta Ads</div>
+    </div>
+    <div class="canal-card organico">
+      <div class="canal-label">🌱 Orgânico</div>
+      <div class="canal-body">
+        <div class="canal-pct organico" id="orgPct">—</div>
+        <div>
+          <div class="canal-value" id="orgVal">—</div>
+          <div class="canal-count" id="orgVnd">—</div>
+        </div>
+      </div>
+      <div class="canal-bar-wrap"><div class="canal-bar organico" id="orgBar" style="width:0%"></div></div>
+      <div class="canal-sub">Sem UTM · Bio · Substack · Eduzz RVP · Venda Rápida</div>
+    </div>
+  </div>
+
+  <!-- FINANCEIRO -->
+  <div class="sec">Financeiro Geral</div>
+  <div class="g4">
+    <div class="card al"><div class="mlabel">Faturamento Bruto</div><div class="mval bl" id="fatBruto">—</div><div class="msub" id="fatBrutoSub">—</div></div>
+    <div class="card al"><div class="mlabel">Ganho Líquido Total <span class="minfo" title="Produtor + Co-produtor, após taxas Eduzz">i</span></div><div class="mval" id="glTotal">—</div><div class="msub">Inclui co-produção</div></div>
+    <div class="card" id="lucroEduzzCard"><div class="mlabel">Lucro do Período</div><div class="mval" id="lucroEduzz">—</div><div class="msub" id="lucroEduzzSub">—</div></div>
+    <div class="card" id="margemCard"><div class="mlabel">Margem Líquida</div><div class="mval" id="margemEduzz">—</div><div class="msub">Em relação ao faturamento</div></div>
+    <div class="card"><div class="mlabel">Vendas Pagas</div><div class="mval" id="vendasPagas">—</div><div class="msub" id="vendasPagasSub">—</div></div>
+    <div class="card ay"><div class="mlabel">Em Recuperação (Pix)</div><div class="mval yl" id="recQtd">—</div><div class="msub" id="recVal">—</div></div>
+    <div class="card"><div class="mlabel">Ticket Médio</div><div class="mval" id="ticket">—</div><div class="msub">Por venda confirmada</div></div>
+    <div class="card ag"><div class="mlabel">Reembolsos</div><div class="mval gr" id="reembolsos">—</div><div class="msub" id="reembolsosSub">—</div></div>
+  </div>
+
+  <!-- EVOLUÇÃO DIÁRIA -->
+  <div class="sec">Evolução Diária</div>
+  <div class="g2">
+    <div class="daily-chart">
+      <div class="mlabel">Faturamento por dia</div>
+      <div class="daily-bars" id="chartFat"></div>
+    </div>
+    <div class="daily-chart">
+      <div class="mlabel">Vendas por dia</div>
+      <div class="daily-bars" id="chartVnd"></div>
+    </div>
+  </div>
+
+  <!-- TRÁFEGO -->
+  <div class="sec">Investimento em Tráfego Pago</div>
+  <div class="g4">
+    <div class="card al"><div class="mlabel">Gasto com Anúncios</div><div class="mval bl" id="custoTraf">—</div><div class="msub">Valor do período</div></div>
+    <div class="card ay"><div class="mlabel">Imposto Meta Ads (12,15%)</div><div class="mval yl" id="impostoMeta">—</div><div class="msub" id="impostoMetaSub">—</div></div>
+    <div class="card al"><div class="mlabel">Custo Total de Tráfego</div><div class="mval" id="custoTrafTot">—</div><div class="msub">Anúncios + imposto</div></div>
+    <div class="card"><div class="mlabel">Custo de Produto <span class="minfo" title="R$30 × físicos/combos. Digitais: sem custo.">i</span></div><div class="mval" id="custoProd">—</div><div class="msub" id="custoProdSub">—</div></div>
+    <div class="card" id="roasCard"><div class="mlabel">ROAS</div><div class="mval" id="roas">—</div><div class="msub">Retorno sobre anúncios</div></div>
+    <div class="card" id="roiCard"><div class="mlabel">ROI</div><div class="mval" id="roi">—</div><div class="msub">Sobre total investido</div></div>
+    <div class="card"><div class="mlabel">CPA</div><div class="mval" id="cpa">—</div><div class="msub">Custo por aquisição</div></div>
+    <div class="card"><div class="mlabel">Total Investido</div><div class="mval" id="totalInvestido">—</div><div class="msub">Tráfego + produto</div></div>
+  </div>
+
+  <!-- PRODUTOS + PAGAMENTOS -->
+  <div class="sec">Produtos & Pagamentos</div>
+  <div class="g2">
+    <div class="card">
+      <div class="mlabel">Vendas por Produto</div>
+      <div id="prodList" style="margin-top:6px"></div>
+    </div>
+    <div class="card">
+      <div class="mlabel">Taxa de Aprovação por Pagamento</div>
+      <div style="margin-top:6px">
+        <div class="arow"><div class="amet">Cartão de Crédito</div><div style="display:flex;align-items:center;gap:14px"><div style="font-size:10px;color:var(--muted)" id="cartaoFrac">—</div><div style="font-size:15px;font-weight:600" id="cartaoTaxa">—</div></div></div>
+        <div class="arow"><div class="amet">Pix</div><div style="display:flex;align-items:center;gap:14px"><div style="font-size:10px;color:var(--muted)" id="pixFrac">—</div><div style="font-size:15px;font-weight:600" id="pixTaxa">—</div></div></div>
+        <div class="arow" style="border-bottom:none"><div class="amet">Boleto Bancário</div><div style="display:flex;align-items:center;gap:14px"><div style="font-size:10px;color:var(--muted)" id="boletoFrac">—</div><div style="font-size:15px;font-weight:600" id="boletoTaxa">—</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FONTES -->
+  <div class="sec">Fontes de Tráfego Detalhadas</div>
+  <div class="g3">
+    <div class="card">
+      <div class="mlabel" style="color:var(--ig)">▲ Instagram</div>
+      <div class="mval" style="color:var(--ig)" id="igVal">—</div>
+      <div style="display:flex;align-items:baseline;gap:8px;margin-top:4px"><span style="font-size:14px;color:var(--muted)" id="igVnd">—</span><span style="font-size:13px;font-weight:600;color:var(--ig)" id="igPct">—</span></div>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px" id="igPlacements"></div>
+      <div class="fbwrap" style="margin-top:12px"><div class="fbar ig" id="igBar" style="width:0%"></div></div>
+    </div>
+    <div class="card">
+      <div class="mlabel" style="color:var(--fb)">f Facebook</div>
+      <div class="mval bl" id="fbVal">—</div>
+      <div style="display:flex;align-items:baseline;gap:8px;margin-top:4px"><span style="font-size:14px;color:var(--muted)" id="fbVnd">—</span><span style="font-size:13px;font-weight:600;color:var(--blue)" id="fbPct">—</span></div>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px" id="fbPlacements"></div>
+      <div class="fbwrap" style="margin-top:12px"><div class="fbar fb" id="fbBar" style="width:0%"></div></div>
+    </div>
+    <div class="card">
+      <div class="mlabel" style="color:var(--green)">🌱 Orgânico</div>
+      <div class="mval gr" id="orgFonteVal">—</div>
+      <div style="display:flex;align-items:baseline;gap:8px;margin-top:4px"><span style="font-size:14px;color:var(--muted)" id="orgFonteVnd">—</span><span style="font-size:13px;font-weight:600;color:var(--green)" id="orgFontePct">—</span></div>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px" id="orgSubcanais"></div>
+      <div class="fbwrap" style="margin-top:12px"><div class="fbar org" id="orgBar2" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- CAMPANHAS -->
+  <div class="sec">Campanhas com Conversão</div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="ctable">
+      <thead><tr><th>Campanha</th><th>Canal</th><th style="text-align:center">Vendas</th><th style="text-align:right">Receita</th><th style="text-align:right">Part. %</th></tr></thead>
+      <tbody id="campTable"></tbody>
+    </table>
+  </div>
+
+  <!-- MARKETPLACES -->
+  <div class="sec">Marketplaces</div>
+  <div class="mkt-grid">
+    <div class="mkt-card">
+      <div class="mkt-header">
+        <div class="mkt-logo" style="background:#131921"><svg width="40" height="40" viewBox="0 0 40 40"><text x="50%" y="44%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-weight="700" font-size="7.5" fill="#FF9900">amazon</text><path d="M7 27 Q20 34 33 27" stroke="#FF9900" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M30 24.5 L33.5 27 L30 30.5" stroke="#FF9900" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div><div class="mkt-name">Amazon</div><div class="mkt-tagline">Atualizado via Sheets · R$30/venda</div></div>
+      </div>
+      <div class="mkt-body">
+        <div class="mkt-stat"><div class="mkt-stat-lbl">Receita</div><div class="mkt-stat-val" id="amzRec">R$ 0,00</div></div>
+        <div class="mkt-stat"><div class="mkt-stat-lbl">Vendas</div><div class="mkt-stat-val" id="amzVnd">0</div></div>
+        <div class="mkt-stat"><div class="mkt-stat-lbl">Custo produto</div><div class="mkt-stat-val" style="color:var(--red)" id="amzCusto">R$ 0,00</div></div>
+        <div class="mkt-stat"><div class="mkt-stat-lbl">Lucro estimado</div><div class="mkt-stat-val" id="amzLucro">R$ —</div></div>
+      </div>
+    </div>
+    <div class="mkt-card">
+      <div class="mkt-header">
+        <div class="mkt-logo" style="background:#FFE600"><svg width="40" height="40" viewBox="0 0 40 40"><ellipse cx="20" cy="20" rx="17" ry="12" fill="#FFE600"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-weight="900" font-size="11" fill="#333">ML</text></svg></div>
+        <div><div class="mkt-name">Mercado Livre</div><div class="mkt-tagline">Atualizado via Sheets · R$30/venda</div></div>
+      </div>
+      <div class="mkt-body">
+        <div class="mkt-stat"><div class="mkt-stat-lbl">Receita</div><div class="mkt-stat-val" id="mlRec">R$ 0,00</div></div>
+        <div class="mkt-stat"><div class="mkt-stat-lbl">Vendas</div><div class="mkt-stat-val" id="mlVnd">0</div></div>
+        <div class="mkt-stat"><div class="mkt-stat-lbl">Custo produto</div><div class="mkt-stat-val" style="color:var(--red)" id="mlCusto">R$ 0,00</div></div>
+        <div class="mkt-stat"><div class="mkt-stat-lbl">Lucro estimado</div><div class="mkt-stat-val" id="mlLucro">R$ —</div></div>
+      </div>
+    </div>
+    <div class="mkt-card">
+      <div class="mkt-header">
+        <div class="mkt-logo" style="background:#EE4D2D"><svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" fill="#EE4D2D"/><path d="M11 19 L13 30 L27 30 L29 19 Z" fill="white" opacity=".95"/><path d="M15.5 19 C15.5 19 15.5 14 20 14 C24.5 14 24.5 19 24.5 19" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="17" cy="25" r="1.5" fill="#EE4D2D"/><circle cx="23" cy="25" r="1.5" fill="#EE4D2D"/></svg></div>
+        <div><div class="mkt-name">Shopee</div><div class="mkt-tagline">Atualizado via Sheets · R$30/venda</div></div>
+      </div>
+      <div class="mkt-body">
+        <div class="mkt-stat"><div class="mkt-stat-lbl">Receita</div><div class="mkt-stat-val" id="shpRec">R$ 0,00</div></div>
+        <div class="mkt-stat"><div class="mkt-stat-lbl">Vendas</div><div class="mkt-stat-val" id="shpVnd">0</div></div>
+        <div class="mkt-stat"><div class="mkt-stat-lbl">Custo produto</div><div class="mkt-stat-val" style="color:var(--red)" id="shpCusto">R$ 0,00</div></div>
+        <div class="mkt-stat"><div class="mkt-stat-lbl">Lucro estimado</div><div class="mkt-stat-val" id="shpLucro">R$ —</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mkt-resumo">
+    <div class="mkt-resumo-item"><div class="mkt-rl">Receita Marketplaces</div><div class="mkt-rv" style="color:var(--blue)" id="mktTotRec">R$ 0,00</div></div>
+    <div class="mkt-resumo-item"><div class="mkt-rl">Total Vendas</div><div class="mkt-rv" id="mktTotVnd">0 vendas</div></div>
+    <div class="mkt-resumo-item"><div class="mkt-rl">Custo de Produto</div><div class="mkt-rv" style="color:var(--red)" id="mktTotCusto">R$ 0,00</div></div>
+    <div class="mkt-resumo-item"><div class="mkt-rl">Lucro Estimado</div><div class="mkt-rv" id="mktTotLucro" style="color:var(--muted)">R$ —</div></div>
+  </div>
+
+  <!-- COMPOSIÇÃO -->
+  <div class="sec">Composição do Resultado</div>
+  <div class="rsum">
+    <div class="ri"><div class="ril">Fat. Eduzz</div><div class="riv" style="color:var(--blue)" id="compEduzz">—</div></div>
+    <div class="ri"><div class="ril">Fat. Marketplaces</div><div class="riv" style="color:var(--blue)" id="compMkt">—</div></div>
+    <div class="ri"><div class="ril">Fat. Total</div><div class="riv" style="color:var(--blue);font-size:16px;font-weight:700" id="compFatTotal">—</div></div>
+    <div class="rsep"></div>
+    <div class="ri"><div class="ril">Taxas Eduzz</div><div class="riv" style="color:var(--red)" id="compTaxas">—</div></div>
+    <div class="ri"><div class="ril">Custo Produto Eduzz</div><div class="riv" style="color:var(--red)" id="compProdEduzz">—</div></div>
+    <div class="ri"><div class="ril">Custo Produto Mkt.</div><div class="riv" style="color:var(--red)" id="compProdMkt">—</div></div>
+    <div class="ri"><div class="ril">Gasto Anúncios</div><div class="riv" style="color:var(--red)" id="compTraf">—</div></div>
+    <div class="ri"><div class="ril">Imposto Meta</div><div class="riv" style="color:var(--red)" id="compImposto">—</div></div>
+  </div>
+
+  <!-- RESULTADO FINAL: fat → custos → lucro → margem -->
+  <div class="resultado-final">
+    <div class="rf-block">
+      <div class="rf-label">Faturamento Total</div>
+      <div class="rf-value" id="resFat" style="color:var(--blue)">—</div>
+      <div class="rf-sub">Eduzz + Marketplaces</div>
+    </div>
+    <div class="rf-sep"></div>
+    <div class="rf-block">
+      <div class="rf-label">Total de Custos</div>
+      <div class="rf-value" id="resCustos" style="color:var(--red)">—</div>
+      <div class="rf-sub">Taxas + produto + tráfego</div>
+    </div>
+    <div class="rf-sep"></div>
+    <div class="rf-block">
+      <div class="rf-label">Lucro Líquido Total</div>
+      <div class="rf-value" id="resLucro">—</div>
+      <div class="rf-sub">Eduzz + Marketplaces</div>
+    </div>
+    <div class="rf-sep"></div>
+    <div class="rf-pct-wrap">
+      <div class="rf-label">Margem Líquida</div>
+      <div class="rf-pct-ring">
+        <svg width="88" height="88" viewBox="0 0 88 88">
+          <circle cx="44" cy="44" r="36" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+          <circle id="ringCircle" cx="44" cy="44" r="36" fill="none"
+                  stroke="var(--muted)" stroke-width="8"
+                  stroke-dasharray="226" stroke-dashoffset="226"
+                  stroke-linecap="round" style="transition:all .6s ease"/>
+        </svg>
+        <div class="rf-pct-text">
+          <div class="rf-pct-num" id="resMargem">—</div>
+          <div class="rf-pct-lbl">margem</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span>Seja Minimalista · Eduzz Webhook → Google Sheets → Dashboard</span>
+  <span id="footerInfo">Co-produção incluída · Substack = orgânico · R$ 30/físico · Meta tax 12,15%</span>
+</footer>
+
+<script>
+const STORAGE_KEY = 'sm_sheet_url';
+const CUSTO_FIXO  = 30;
+const CIRC        = 2 * Math.PI * 36; // ≈ 226
+
+// ── SETUP MODAL ──────────────────────────────────────────────
+function openModal()  { document.getElementById('setupModal').style.display='flex'; }
+function closeModal() { document.getElementById('setupModal').style.display='none'; }
+
+function saveAndLoad() {
+  const url = document.getElementById('sheetUrlInput').value.trim();
+  if (!url) { alert('Cole a URL do CSV primeiro.'); return; }
+  localStorage.setItem(STORAGE_KEY, url);
+  closeModal();
+  loadData();
+}
+
+// ── FETCH DATA ───────────────────────────────────────────────
+async function loadData() {
+  const url = localStorage.getItem(STORAGE_KEY);
+  if (!url) { openModal(); return; }
+
+  setStatus('load', 'Buscando dados da planilha...');
+
+  try {
+    // Adiciona cache-busting
+    const resp = await fetch(url + '&cachebust=' + Date.now());
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const text = await resp.text();
+    const d    = parseCSV(text);
+    render(d);
+    setStatus('ok', 'Dados atualizados com sucesso');
+    document.getElementById('lastUpdate').textContent =
+      'Atualizado ' + new Date().toLocaleTimeString('pt-BR');
+  } catch (err) {
+    setStatus('err', 'Erro ao buscar dados: ' + err.message + ' — verifique a URL e a publicação do Sheets.');
+  }
+}
+
+function parseCSV(text) {
+  const rows = text.trim().split('\n').slice(1); // pula header
+  const d = {};
+  rows.forEach(row => {
+    const comma = row.indexOf(',');
+    if (comma < 0) return;
+    const key = row.substring(0, comma).trim().replace(/^"|"$/g,'');
+    const val = row.substring(comma+1).trim().replace(/^"|"$/g,'');
+    d[key] = val;
+  });
+  return d;
+}
+
+// ── RENDER ────────────────────────────────────────────────────
+function render(d) {
+  const n  = (k, fb=0) => parseFloat(d[k]) || fb;
+  const s  = (k, fb='—') => d[k] || fb;
+  const pct= (v, t) => t > 0 ? (v/t*100).toFixed(1)+'%' : '—';
+
+  // Filter bar
+  document.getElementById('fPeriodo').textContent  = s('periodo');
+  document.getElementById('fTrafego').textContent  = fmt(n('custo_trafego'));
+  document.getElementById('fImposto').textContent  = fmt(n('imposto_meta'));
+  document.getElementById('periodoBadge').textContent = s('periodo');
+  const mktVndTot = n('amz_vendas') + n('ml_vendas') + n('shp_vendas');
+  document.getElementById('fMkt').textContent =
+    mktVndTot > 0 ? mktVndTot + ' vendas · ' + fmt(n('amz_receita')+n('ml_receita')+n('shp_receita')) : 'Sem vendas';
+
+  // Canal
+  set('pagoPct',  n('pago_pct').toFixed(1)+'%');
+  set('pagoVal',  fmt(n('pago_receita')));
+  set('pagoVnd',  n('pago_vendas') + ' vendas confirmadas');
+  document.getElementById('pagoBar').style.width = n('pago_pct')+'%';
+  set('orgPct',   n('organico_pct').toFixed(1)+'%');
+  set('orgVal',   fmt(n('organico_receita')));
+  set('orgVnd',   n('organico_vendas') + ' vendas confirmadas');
+  document.getElementById('orgBar').style.width = n('organico_pct')+'%';
+
+  // Financeiro
+  set('fatBruto',     fmt(n('fat_eduzz_bruto')));
+  set('fatBrutoSub',  n('vendas_pagas') + ' vendas confirmadas · ' + s('periodo'));
+  set('glTotal',      fmt(n('gl_total')));
+  setValColor('lucroEduzz', n('lucro_eduzz'), true);
+  setTagColor('lucroEduzzCard', n('lucro_eduzz'));
+  set('lucroEduzzSub', n('lucro_eduzz') >= 0 ? '✓ resultado positivo' : 'considerar custo de tráfego');
+  setValColor('margemEduzz', n('margem').toFixed(2)+'%');
+  setTagColor('margemCard', n('margem'));
+  set('vendasPagas', n('vendas_pagas'));
+  set('vendasPagasSub', n('vendas_abertas_qtd') + ' em aberto ('+fmt(n('vendas_abertas_val'))+')');
+  set('recQtd', n('vendas_rec_qtd'));
+  set('recVal', fmt(n('vendas_rec_val')) + ' potencial');
+  set('ticket', fmt(n('ticket_medio')));
+  set('reembolsos', fmt(n('reembolsos_val')));
+  set('reembolsosSub', '0 reembolsos no período');
+
+  // Diário
+  buildDailyChart(d);
+
+  // Tráfego
+  const totalInv = n('custo_produto_eduzz') + n('custo_traf_total');
+  set('custoTraf',    fmt(n('custo_trafego')));
+  set('impostoMeta',  fmt(n('imposto_meta')));
+  set('impostoMetaSub','Sobre ' + fmt(n('custo_trafego')));
+  set('custoTrafTot', fmt(n('custo_traf_total')));
+  set('custoProd',    fmt(n('custo_produto_eduzz')));
+  set('custoProdSub', n('fisico_combo_qtd') + ' físicos/combos × R$ 30');
+  setValColor('roas',  n('roas').toFixed(2)+'×');
+  setTagColor('roasCard', n('roas') - 1);
+  setValColor('roi',   n('roi').toFixed(2)+'%');
+  setTagColor('roiCard', n('roi'));
+  set('cpa',           fmt(n('cpa')));
+  set('totalInvestido',fmt(totalInv));
+
+  // Produtos
+  buildProdutos(d);
+
+  // Pagamentos
+  buildPgto(d);
+
+  // Fontes
+  set('igVal',  fmt(n('ig_receita')));  set('igVnd', n('ig_vendas')+' vendas'); set('igPct', n('ig_pct').toFixed(1)+'%');
+  document.getElementById('igBar').style.width = n('ig_pct')+'%';
+  buildPlacements('igPlacements', [
+    ['Stories', n('ig_stories_vendas'), n('ig_stories_receita')],
+    ['Feed',    n('ig_feed_vendas'),    n('ig_feed_receita')],
+    ['Reels',   n('ig_reels_vendas'),   n('ig_reels_receita')],
+  ]);
+
+  set('fbVal',  fmt(n('fb_receita'))); set('fbVnd', n('fb_vendas')+' vendas'); set('fbPct', n('fb_pct').toFixed(1)+'%');
+  document.getElementById('fbBar').style.width = n('fb_pct')+'%';
+  buildPlacements('fbPlacements', [
+    ['Mobile Feed', n('fb_feed_vendas'),    n('fb_feed_receita')],
+    ['Stories',     n('fb_stories_vendas'), n('fb_stories_receita')],
+    ['Reels',       n('fb_reels_vendas'),   n('fb_reels_receita')],
+    ['Outros',      n('fb_outros_vendas'),  n('fb_outros_receita')],
+  ]);
+
+  set('orgFonteVal', fmt(n('organico_receita'))); set('orgFonteVnd', n('organico_vendas')+' vendas'); set('orgFontePct', n('organico_pct').toFixed(1)+'%');
+  document.getElementById('orgBar2').style.width = n('organico_pct')+'%';
+  buildPlacements('orgSubcanais', [
+    ['Sem UTM / Direto', n('org_semutm_vendas'),  n('org_semutm_receita')],
+    ['Eduzz RVP / WhatsApp', n('org_rvp_vendas'), n('org_rvp_receita')],
+    ['Venda Rápida',     n('org_rapida_vendas'),  n('org_rapida_receita')],
+    ['Link na Bio',      n('org_bio_vendas'),      n('org_bio_receita')],
+    ['Substack',         n('org_substack_vendas'), n('org_substack_receita')],
+  ]);
+
+  // Campanhas
+  buildCampanhas(d);
+
+  // Marketplaces
+  buildMkt(d);
+
+  // Composição + Resultado Final
+  buildComposicao(d);
+  buildResultado(d);
+}
+
+// ── BUILDERS ─────────────────────────────────────────────────
+function buildDailyChart(d) {
+  const totalDias = parseInt(d['total_dias']) || 0;
+  const dias = [];
+  for (let i = 1; i <= totalDias; i++) {
+    dias.push({ data: d[`dia_${i}_data`]||'', vendas: parseFloat(d[`dia_${i}_vendas`])||0, receita: parseFloat(d[`dia_${i}_receita`])||0 });
+  }
+  if (!dias.length) return;
+  const maxRec = Math.max(...dias.map(d=>d.receita));
+  const maxVnd = Math.max(...dias.map(d=>d.vendas));
+
+  const fatEl = document.getElementById('chartFat');
+  const vndEl = document.getElementById('chartVnd');
+  fatEl.innerHTML = '';
+  vndEl.innerHTML = '';
+
+  dias.forEach(dia => {
+    const hRec = maxRec > 0 ? Math.round((dia.receita / maxRec) * 56) : 2;
+    const hVnd = maxVnd > 0 ? Math.round((dia.vendas / maxVnd) * 56) : 2;
+    const lbl  = dia.data.split('/').slice(0,2).join('/');
+
+    fatEl.innerHTML += `<div class="daily-col">
+      <div class="daily-val" style="color:var(--blue)">${fmt(dia.receita)}</div>
+      <div class="daily-bar-wrap"><div class="daily-bar" style="height:${hRec}px;background:linear-gradient(180deg,var(--blue),rgba(68,147,248,.3))"></div></div>
+      <div class="daily-lbl">${lbl}</div>
+    </div>`;
+
+    vndEl.innerHTML += `<div class="daily-col">
+      <div class="daily-val" style="color:var(--green)">${dia.vendas}</div>
+      <div class="daily-bar-wrap"><div class="daily-bar" style="height:${hVnd}px;background:linear-gradient(180deg,var(--green),rgba(63,185,80,.3))"></div></div>
+      <div class="daily-lbl">${lbl}</div>
+    </div>`;
+  });
+}
+
+function buildProdutos(d) {
+  const colors = ['var(--blue)','var(--ig)','var(--orange)','var(--green)','var(--yellow)','var(--purple)','var(--muted)','var(--muted2)'];
+  let html = '';
+  let maxRec = 0;
+  for (let i=1;i<=8;i++) { const r=parseFloat(d[`prod_${i}_receita`])||0; if(r>maxRec) maxRec=r; }
+  for (let i=1;i<=8;i++) {
+    const nome = d[`prod_${i}_nome`]; if(!nome) break;
+    const vnd  = parseInt(d[`prod_${i}_vendas`])||0;
+    const rec  = parseFloat(d[`prod_${i}_receita`])||0;
+    const pct  = maxRec > 0 ? Math.round(rec/maxRec*100) : 0;
+    html += `<div class="prow">
+      <div class="pname">${nome}</div>
+      <div class="pbwrap"><div class="pbar" style="width:${pct}%;background:${colors[i-1]}"></div></div>
+      <div class="pstats">
+        <div><div class="psv">${vnd}</div><div class="psl">vendas</div></div>
+        <div><div class="psv">${fmt(rec)}</div><div class="psl">receita</div></div>
+      </div>
+    </div>`;
+  }
+  document.getElementById('prodList').innerHTML = html;
+}
+
+function buildPgto(d) {
+  const apv = (pg, tot) => {
+    const p = parseInt(d[pg])||0, t = parseInt(d[tot])||0;
+    const frac = `${p} de ${t}`;
+    const pct  = t > 0 ? (p/t*100).toFixed(1)+'%' : '—';
+    const color = p===t ? 'var(--green)' : (p/t >= 0.8 ? 'var(--yellow)' : 'var(--red)');
+    return { frac, pct, color };
+  };
+  const c = apv('aprova_cartao_pago','aprova_cartao_total');
+  const p = apv('aprova_pix_pago','aprova_pix_total');
+  const b = apv('aprova_boleto_pago','aprova_boleto_total');
+  set('cartaoFrac',c.frac); setEl('cartaoTaxa',c.pct,c.color);
+  set('pixFrac',p.frac);    setEl('pixTaxa',p.pct,p.color);
+  set('boletoFrac',b.frac); setEl('boletoTaxa',b.pct,b.color);
+}
+
+function buildPlacements(elId, rows) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.innerHTML = rows.filter(r=>r[1]>0||r[2]>0).map(([lbl,vnd,rec]) =>
+    `<div class="plrow"><span class="pl-lbl">${lbl}</span><span style="font-weight:600">${vnd} · ${fmt(rec)}</span></div>`
+  ).join('');
+}
+
+function buildCampanhas(d) {
+  const fatBruto = parseFloat(d['fat_eduzz_bruto'])||1;
+  let html = '';
+  for (let i=1;i<=8;i++) {
+    const nome = d[`camp_${i}_nome`]; if(!nome) break;
+    const canal  = String(d[`camp_${i}_canal`]||'').toLowerCase();
+    const vendas = parseInt(d[`camp_${i}_vendas`])||0;
+    const receita= parseFloat(d[`camp_${i}_receita`])||0;
+    const part   = (receita/fatBruto*100).toFixed(1)+'%';
+    let pillHtml = '';
+    if (canal === 'organico' || canal === 'org') pillHtml = `<span class="pill org">🌱 Orgânico</span>`;
+    else if (canal === 'ig') pillHtml = `<span class="pill ig">▲ Instagram</span>`;
+    else if (canal === 'fb') pillHtml = `<span class="pill fb">f Facebook</span>`;
+    else pillHtml = `<span class="pill" style="background:var(--yellow-dim);color:var(--yellow)">${canal}</span>`;
+    html += `<tr><td>${nome}</td><td>${pillHtml}</td><td style="text-align:center;font-weight:600">${vendas}</td><td style="text-align:right;font-weight:600">${fmt(receita)}</td><td style="text-align:right;color:var(--muted)">${part}</td></tr>`;
+  }
+  document.getElementById('campTable').innerHTML = html;
+}
+
+function buildMkt(d) {
+  const n = (k) => parseFloat(d[k])||0;
+  const mkt = [
+    { prefix:'amz', rec: n('amz_receita'), vnd: n('amz_vendas') },
+    { prefix:'ml',  rec: n('ml_receita'),  vnd: n('ml_vendas')  },
+    { prefix:'shp', rec: n('shp_receita'), vnd: n('shp_vendas') },
+  ];
+  let totRec=0, totVnd=0, totCusto=0;
+  mkt.forEach(m => {
+    const cust = m.vnd * CUSTO_FIXO;
+    const lucr = m.rec - cust;
+    totRec += m.rec; totVnd += m.vnd; totCusto += cust;
+    set(m.prefix+'Rec',   fmt(m.rec));
+    set(m.prefix+'Vnd',   m.vnd);
+    set(m.prefix+'Custo', '− '+fmt(cust));
+    const elL = document.getElementById(m.prefix+'Lucro');
+    if (!m.vnd && !m.rec) { elL.textContent='R$ —'; elL.style.color='var(--muted)'; }
+    else { elL.textContent=(lucr<0?'− ':'')+fmt(lucr); elL.style.color=lucr>=0?'var(--green)':'var(--red)'; }
+  });
+  set('mktTotRec',  fmt(totRec));
+  set('mktTotVnd',  totVnd+' venda'+(totVnd!==1?'s':''));
+  set('mktTotCusto','− '+fmt(totCusto));
+  const elML=document.getElementById('mktTotLucro');
+  const mktLucr=totRec-totCusto;
+  if(!totVnd&&!totRec){elML.textContent='R$ —';elML.style.color='var(--muted)';}
+  else{elML.textContent=(mktLucr<0?'− ':'')+fmt(mktLucr);elML.style.color=mktLucr>=0?'var(--green)':'var(--red)';}
+}
+
+function buildComposicao(d) {
+  const n=(k)=>parseFloat(d[k])||0;
+  set('compEduzz',    fmt(n('fat_eduzz_bruto')));
+  set('compMkt',      fmt(n('fat_mkt')));
+  set('compFatTotal', fmt(n('fat_total')));
+  set('compTaxas',    '− '+fmt(n('taxas_eduzz')));
+  set('compProdEduzz','− '+fmt(n('custo_produto_eduzz')));
+  set('compProdMkt',  '− '+fmt(n('custo_prod_mkt')));
+  set('compTraf',     '− '+fmt(n('custo_trafego')));
+  set('compImposto',  '− '+fmt(n('imposto_meta')));
+}
+
+function buildResultado(d) {
+  const n=(k)=>parseFloat(d[k])||0;
+  const fatTotal  = n('fat_total');
+  const lucro     = n('lucro_total');
+  const margem    = n('margem');
+  const custosTot = fatTotal - lucro;
+
+  setEl('resFat',    fmt(fatTotal), 'var(--blue)');
+  setEl('resCustos', fmt(custosTot), 'var(--red)');
+  const elL=document.getElementById('resLucro');
+  elL.textContent = (lucro<0?'− ':'')+fmt(lucro);
+  elL.style.color = lucro>=0?'var(--green)':'var(--red)';
+
+  const elM=document.getElementById('resMargem');
+  elM.textContent = (margem<0?'−':'')+Math.abs(margem).toFixed(1)+'%';
+  elM.style.color = margem>=0?'var(--green)':'var(--red)';
+
+  const pct = Math.min(Math.abs(margem)/100,1);
+  const ring=document.getElementById('ringCircle');
+  ring.setAttribute('stroke-dashoffset',(CIRC-pct*CIRC).toFixed(1));
+  ring.setAttribute('stroke',margem>=0?'var(--green)':'var(--red)');
+}
+
+// ── UTILIDADES ────────────────────────────────────────────────
+function fmt(v) { return 'R$ '+Math.abs(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function set(id, val) {
+  const el=document.getElementById(id);
+  if(el) el.textContent=val;
+}
+function setEl(id, val, color) {
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.textContent=val;
+  if(color) el.style.color=color;
+}
+function setValColor(id, val, isNum=false) {
+  const el=document.getElementById(id);
+  if(!el) return;
+  if(isNum) { el.textContent=(val<0?'− ':'')+fmt(val); el.style.color=val>=0?'var(--green)':'var(--red)'; }
+  else { el.textContent=val; }
+}
+function setTagColor(cardId, val) {
+  const card=document.getElementById(cardId);
+  if(!card) return;
+  card.className='card '+(val>=0?'ag':'ar');
+}
+
+function setStatus(type, msg) {
+  const dot=document.getElementById('statusDot');
+  dot.className = type==='ok'?'status-dot-ok':type==='err'?'status-dot-err':'status-dot-load';
+  document.getElementById('statusMsg').textContent=msg;
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const url = localStorage.getItem(STORAGE_KEY);
+  if (url) {
+    document.getElementById('sheetUrlInput').value = url;
+    document.getElementById('setupModal').style.display='none';
+    loadData();
+  } else {
+    setStatus('err','Planilha não configurada — clique em ⚙ para configurar.');
+  }
+});
+</script>
+</body>
+</html>
